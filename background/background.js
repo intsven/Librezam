@@ -26,7 +26,12 @@ chrome.runtime.onInstalled.addListener(() => {
 
 chrome.contextMenus?.onClicked.addListener(async (info, tab) => {
     if(info.menuItemId === "recognize-song"){
-        await chrome.action.openPopup()
+        let win = await chrome.windows.get(tab.windowId)
+        if(win.type === "popup"){
+            await chrome.windows.update(tab.windowId, {focused: true})
+        } else {
+            await chrome.action.openPopup()
+        }
     }
 })
 
