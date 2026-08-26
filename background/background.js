@@ -16,6 +16,20 @@ chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
     return true
 })
 
+chrome.runtime.onInstalled.addListener(() => {
+    chrome.contextMenus.create({
+        id: "recognize-song",
+        title: "Recognize Song",
+        contexts: ["page"]
+    })
+})
+
+chrome.contextMenus?.onClicked.addListener(async (info, tab) => {
+    if(info.menuItemId === "recognize-song"){
+        await chrome.action.openPopup()
+    }
+})
+
 chrome.commands?.onCommand.addListener(async (command) => {
     if(command == "tab-recognize"){
         await chrome.action.openPopup()
