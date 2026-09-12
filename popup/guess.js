@@ -89,20 +89,16 @@ async function startTabRecognition() {
 
 async function recordFromTabCapture(times) {
     return new Promise((resolve, reject) => {
-        let tabIdPromise
-        let urlTabId = new URLSearchParams(window.location.search).get("tabId")
-        if(urlTabId) {
-            tabIdPromise = Promise.resolve({id: Number(urlTabId)})
-        } else {
-            tabIdPromise = chrome.tabs.query({active: true, currentWindow: true}).then(t => t[0])
-        }
-        tabIdPromise.then(tab => {
-            chrome.tabs.get(tab.id, async (tab) => {
-                if (!tab || !tab.audible) {
-                    return reject(new Error("Tab is not playing audio"))
-                }
-
-                chrome.tabCapture.capture({ audio: true, video: false }, async (stream) => {
+        // Check if tab is audible before capturing
+        chrome.tabs.query({active: true, currentWindow: true}, async (tabs) => {
+            const tab = tabs[0]
+            
+            // Check if tab is audible - if not, reject immediately
+            if (!tab || !tab.audible) {
+                return reject(new Error("Tab is not playing audio"))
+            }
+            
+            chrome.tabCapture.capture({ audio: true, video: false }, async (stream) => {
                 
                 if (chrome.runtime.lastError || !stream) {
                     return reject(chrome.runtime.lastError || new Error("Stream capture failed"))
@@ -143,7 +139,6 @@ async function recordFromTabCapture(times) {
                 }
                 resolve(audioPromises)
             })
-        })
         })
     })
 }
@@ -331,19 +326,13 @@ async function getTabId() {
     if(getTabId.tabId) {
         return getTabId.tabId
     }
-    let urlTabId = new URLSearchParams(window.location.search).get("tabId")
-    let tabId
-    if(urlTabId) {
-        tabId = Number(urlTabId)
-    } else {
-        let tab = await chrome.tabs.query({active:true, currentWindow:true}).then(t => t[0])
-        tabId = tab.id
-        let isRecordAnotherTab = await getStorage("isRecordAnotherTab")
-        if(!tab.audible && isRecordAnotherTab){
-            let anotherTab = await chrome.tabs.query({audible:true, currentWindow:true}).then(t => t[0])
-            if(anotherTab){
-                tabId = anotherTab.id
-            }
+    let tab = await chrome.tabs.query({active:true, currentWindow:true}).then(t => t[0])
+    let tabId = tab.id
+    let isRecordAnotherTab = await getStorage("isRecordAnotherTab")
+    if(!tab.audible && isRecordAnotherTab){
+        let anotherTab = await chrome.tabs.query({audible:true, currentWindow:true}).then(t => t[0])
+        if(anotherTab){
+            tabId = anotherTab.id
         }
     }
     getTabId.tabId = tabId

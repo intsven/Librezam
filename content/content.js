@@ -14,6 +14,14 @@ chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
     if(request.action == "GetNextRecorded") {
         getNextRecorded().then(r => sendResponse(r))
     }
+    if(request.action == "RecognizeFromContext") {
+        autoGuessRecorder().then(audios => {
+            chrome.runtime.sendMessage({
+                action: "AutoGuess",
+                audios: audios
+            })
+        })
+    }
     return true
 })
 let audioPromisesMap = []
