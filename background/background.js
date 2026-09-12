@@ -27,7 +27,7 @@ chrome.runtime.onInstalled.addListener(() => {
 chrome.contextMenus?.onClicked.addListener(async (info, tab) => {
     if(info.menuItemId === "recognize-song"){
         chrome.windows.create({
-            url: "/popup/guess.html",
+            url: `/popup/guess.html?tabId=${tab.id}`,
             type: "popup",
             width: 350,
             height: 500
