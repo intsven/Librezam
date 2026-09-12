@@ -26,12 +26,12 @@ chrome.runtime.onInstalled.addListener(() => {
 
 chrome.contextMenus?.onClicked.addListener(async (info, tab) => {
     if(info.menuItemId === "recognize-song"){
-        let win = await chrome.windows.get(tab.windowId)
-        if(win.type === "popup"){
-            await chrome.windows.update(tab.windowId, {focused: true})
-        } else {
-            await chrome.action.openPopup()
-        }
+        chrome.windows.create({
+            url: "/popup/guess.html",
+            type: "popup",
+            width: 350,
+            height: 500
+        })
     }
 })
 
